@@ -15,7 +15,7 @@ class App extends Component {
       code: null,
       name: null
     },
-    isUserLogged: false,
+    isAuthenticated: false,
   }
 
   handleChange = event => {
@@ -42,7 +42,7 @@ class App extends Component {
       const user = await Auth.signIn(username, password)
       const { accessKeyId, secretAccessKey, sessionToken } = await Auth.currentCredentials()
 
-      this.setState({ ...this.state, isUserLogged: true, user: user.attributes, accessKeyId, secretAccessKey, sessionToken })
+      this.setState({ ...this.state, isAuthenticated: true, user: user.attributes, accessKeyId, secretAccessKey, sessionToken })
 
     } catch (error) {
       this.setState({ ...this.state, error })
@@ -69,15 +69,35 @@ class App extends Component {
     } catch (error) {
       this.setState({ ...this.state, error })
     }
-}
+  }
+
+  checkCurrentSession = async () => {
+
+    try {
+      const isSession = await Auth.currentSession()
+      if (isSession) {
+        const { accessKeyId, secretAccessKey, sessionToken } = await Auth.currentCredentials()
+        const user = await Auth.currentUserInfo()
+
+        this.setState({ ...this.state, isAuthenticated: true, accessKeyId, secretAccessKey, sessionToken, user: user.attributes })
+      }
+
+    } catch (error) {
+      this.setState({ ...this.state, error })
+    }
+
+  }
+  componentDidMount() {
+    this.checkCurrentSession()
+  }
 
   render() {
     const { handleChange, signIn, listObjects } = this
-    const { username, password, isUserLogged, bucket, error, user, files } = this.state
+    const { username, password, isAuthenticated, bucket, error, user, files } = this.state
     return (
       <div className="App">
         <header className="App-header">
-          {!isUserLogged ?
+          {!isAuthenticated ?
             (
               <form onSubmit={signIn}>
                 <input id='username' onChange={handleChange} value={username}></input>

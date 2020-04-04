@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
-import * as serviceWorker from './serviceWorker';
 import Amplify from 'aws-amplify'
 import config from './config/aws-config.json'
 
@@ -18,7 +17,4 @@ ReactDOM.render(
     <App />
   </React.StrictMode>,
   document.getElementById('root')
-);
-
-
-serviceWorker.unregister();
+)

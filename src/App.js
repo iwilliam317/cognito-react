@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import { Auth } from "aws-amplify";
+import aws from 'aws-sdk'
 
 class App extends Component {
   state = {
@@ -8,59 +9,71 @@ class App extends Component {
     password: '',
     bucket: '',
     user: {},
+    files: [],
     error: {
       message: null,
       code: null,
       name: null
     },
-    isUserLogged: false
+    isUserLogged: false,
   }
 
   handleChange = event => {
     this.setState({ [event.target.id]: event.target.value })
   }
 
+  clearState = () => {
+    this.setState({
+      ...this.state, error: {
+        message: null,
+        code: null,
+        name: null
+      },
+      files: []
+    })
+  }
+
   signIn = async event => {
     event.preventDefault()
+    this.clearState()
 
     try {
       const { username, password } = this.state
       const user = await Auth.signIn(username, password)
-      const credentials = await Auth.currentCredentials()
-      console.log(credentials)
-      this.setState({ ...this.state, isUserLogged: true, user: user.attributes })
-      console.log(user)
+      const { accessKeyId, secretAccessKey, sessionToken } = await Auth.currentCredentials()
+
+      this.setState({ ...this.state, isUserLogged: true, user: user.attributes, accessKeyId, secretAccessKey, sessionToken })
+
     } catch (error) {
-      this.setState({...this.state, error})
+      this.setState({ ...this.state, error })
     }
 
   }
 
-  listObjects = async () => {
-    // const s3 = new aws.S3()
+  listObjects = async event => {
+    event.preventDefault()
+    this.clearState()
+
+    const { accessKeyId, secretAccessKey, sessionToken } = this.state
+    const s3 = new aws.S3({ accessKeyId, sessionToken, secretAccessKey })
     const { bucket: Bucket } = this.state
-    var params = {
+    const params = {
       Bucket
     };
-    console.log(params)
 
+    try {
+      const data = await s3.listObjects(params).promise()
+      const files = data.Contents
+      this.setState({ ...this.state, files })
 
-    // s3.listObjects(params, function (err, data) {
-      // if (err) logMessage(err.message);
-      // else {
-      //   data.Contents.forEach(element => {
-      //     console.log(element.Key);
-      //   });
-
-      // }
-
-
-    // })
-  }
+    } catch (error) {
+      this.setState({ ...this.state, error })
+    }
+}
 
   render() {
     const { handleChange, signIn, listObjects } = this
-    const { username, password, isUserLogged, bucket } = this.state
+    const { username, password, isUserLogged, bucket, error, user, files } = this.state
     return (
       <div className="App">
         <header className="App-header">
@@ -70,23 +83,32 @@ class App extends Component {
                 <input id='username' onChange={handleChange} value={username}></input>
                 <input id='password' type='password' onChange={handleChange} value={password}></input>
                 <button>Sign in</button>
-                <div>
-                  {this.state.error.message}
-                </div>
+
               </form>
             ) :
             (
               <>
-                <p>User Logged {this.state.user.email}</p>
+                <h1>Hello <strong>{user.email}</strong>  </h1>
                 <input id='bucket' value={bucket} onChange={handleChange} />
                 <button onClick={listObjects}>List Files in S3</button>
+
+                <div>
+                  <ul>
+                    {files.map((file, index) => (<li key={index}>{file.Key}</li>))}
+
+                  </ul>
+                </div>
               </>
             )}
+          <div>
+            {error.message}
+          </div>
         </header>
       </div>
     );
   }
 }
+
 
 
 export default App;

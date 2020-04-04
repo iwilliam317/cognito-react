@@ -5,11 +5,11 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 
 ## Requirements
--> NodeJS installed
--> Identity Pool and User Pool already set up
--> create a file in src/config/ named aws-config.json
--> Fulfill the identityPoolId, userPoolId and region
--> Run ` npm start or yarn start `
+* NodeJS installed
+* Identity Pool and User Pool already set up
+* create a file in src/config/ named aws-config.json
+* Fulfill the identityPoolId, userPoolId and region
+* Run ` npm start or yarn start `
 
 ## Considerations
 I recommend to previous sign up two users, and associate them with two different groups.

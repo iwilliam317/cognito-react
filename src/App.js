@@ -36,7 +36,6 @@ class App extends Component {
   signIn = async event => {
     event.preventDefault()
     this.clearState()
-
     try {
       const { username, password } = this.state
       const user = await Auth.signIn(username, password)
@@ -48,6 +47,16 @@ class App extends Component {
       this.setState({ ...this.state, error })
     }
 
+  }
+
+  signOut = async event => {
+    event.preventDefault();
+    try {
+      Auth.signOut();
+      this.setState({ ...this.state, isAuthenticated: false, user: {} })
+    } catch (error) {
+      this.setState({ ...this.state, error })
+    }
   }
 
   listObjects = async event => {
@@ -92,26 +101,37 @@ class App extends Component {
   }
 
   render() {
-    const { handleChange, signIn, listObjects } = this
+    const { handleChange, signIn, listObjects, signOut } = this
     const { username, password, isAuthenticated, bucket, error, user, files } = this.state
     return (
       <div className="App">
         <header className="App-header">
+
           {!isAuthenticated ?
             (
               <form onSubmit={signIn}>
-                <input id='username' onChange={handleChange} value={username}></input>
-                <input id='password' type='password' onChange={handleChange} value={password}></input>
+                <h1>Cognito - React </h1>
+                <div>
+                  <label>Email/Username: </label>
+                  <input id='username' onChange={handleChange} value={username}></input>
+                </div>
+                <div>
+                  <label>Password: </label>
+                  <input id='password' type='password' onChange={handleChange} value={password}></input>
+                </div>
                 <button>Sign in</button>
 
               </form>
             ) :
             (
               <>
-                <h1>Hello <strong>{user.email}</strong>  </h1>
-                <input id='bucket' value={bucket} onChange={handleChange} />
-                <button onClick={listObjects}>List Files in S3</button>
-
+                <h1>Hello <strong>{user.email}</strong></h1>
+                <div>
+                  <label>S3 Bucket: </label>
+                  <input id='bucket' value={bucket} onChange={handleChange} />
+                  <button onClick={listObjects}>List Files</button>
+                  <button onClick={signOut}>Sign Out</button>
+                </div>
                 <div>
                   <ul>
                     {files.map((file, index) => (<li key={index}>{file.Key}</li>))}
@@ -128,7 +148,5 @@ class App extends Component {
     );
   }
 }
-
-
 
 export default App;

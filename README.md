@@ -1,3 +1,7 @@
+# cognito-react
+## Description
+A React application that allows users to sign in with AWS Cognito User Pool and obtain temporary AWS credentials via Cognito Identity Pool. Using the credentials, users can access S3 bucket based on the IAM role.
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Installation

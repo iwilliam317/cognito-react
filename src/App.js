@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import './App.css';
 import { Auth } from "aws-amplify";
 import aws from 'aws-sdk'
+import axios from 'axios'
+import config from './config/aws-config.json'
 
 class App extends Component {
   state = {
@@ -29,7 +31,8 @@ class App extends Component {
         code: null,
         name: null
       },
-      files: []
+      files: [],
+      apiGatewayResponse: ''
     })
   }
 
@@ -39,7 +42,8 @@ class App extends Component {
     try {
       const { username, password } = this.state
       const user = await Auth.signIn(username, password)
-      const { accessKeyId, secretAccessKey, sessionToken } = await Auth.currentCredentials()
+      const { accessKeyId, secretAccessKey, sessionToken, ...rest } = await Auth.currentCredentials()
+      console.log(rest)
 
       this.setState({ ...this.state, isAuthenticated: true, user: user.attributes, accessKeyId, secretAccessKey, sessionToken })
 
@@ -87,8 +91,8 @@ class App extends Component {
       if (isSession) {
         const { accessKeyId, secretAccessKey, sessionToken } = await Auth.currentCredentials()
         const user = await Auth.currentUserInfo()
-
-        this.setState({ ...this.state, isAuthenticated: true, accessKeyId, secretAccessKey, sessionToken, user: user.attributes })
+        console.log(user)
+        this.setState({ ...this.state, isAuthenticated: true, accessKeyId, secretAccessKey, sessionToken, user: user.attributes, username: user.username })
       }
 
     } catch (error) {
@@ -96,13 +100,34 @@ class App extends Component {
     }
 
   }
+
+  checkApiCognitoAuthorizer = async event => {
+    event.preventDefault()
+    try {
+      const { username } = this.state
+      const hashToken = config.api.HASH_ID_TOKEN
+      const token = localStorage.getItem(`${hashToken}.${username}.idToken`)
+      const key = config.api.KEY
+
+      if (token && key) {
+        const url = 'https://my-api.obanw.myinstance.com/v1/testquotaandcognito'
+        const headers = {"x-cognito-token": token, "x-api-key": key}
+        const response = await axios.get(url, { headers })
+        this.setState({ ...this.state, apiGatewayResponse: JSON.stringify(response.data) })
+
+      }
+    } catch (error) {
+      console.log(error)
+      this.setState({ ...this.state, error })
+    }
+  }
   componentDidMount() {
     this.checkCurrentSession()
   }
 
   render() {
-    const { handleChange, signIn, listObjects, signOut } = this
-    const { username, password, isAuthenticated, bucket, error, user, files } = this.state
+    const { handleChange, signIn, listObjects, signOut, checkApiCognitoAuthorizer } = this
+    const { username, password, isAuthenticated, bucket, error, user, files, apiGatewayResponse } = this.state
     return (
       <div className="App">
         <header className="App-header">
@@ -130,6 +155,7 @@ class App extends Component {
                   <label>S3 Bucket: </label>
                   <input id='bucket' value={bucket} onChange={handleChange} />
                   <button onClick={listObjects}>List Files</button>
+                  <button onClick={checkApiCognitoAuthorizer}>Test Api Gateway</button>
                   <button onClick={signOut}>Sign Out</button>
                 </div>
                 <div>
@@ -137,6 +163,9 @@ class App extends Component {
                     {files.map((file, index) => (<li key={index}>{file.Key}</li>))}
 
                   </ul>
+                </div>
+                <div>
+                  {apiGatewayResponse}
                 </div>
               </>
             )}

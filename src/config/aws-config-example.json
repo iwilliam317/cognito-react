@@ -6,7 +6,7 @@
       "APP_CLIENT_ID": ""
     },
     "api": {
-      "KEY": "API_KEY",
-      "HASH_ID_TOKEN": "HASH_ID_TOKEN_IN_LOCAL_STORAGE"
+      "URL": "",
+      "KEY": "API_KEY"
     }
   }

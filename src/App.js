@@ -43,7 +43,6 @@ class App extends Component {
       const { username, password } = this.state
       const user = await Auth.signIn(username, password)
       const { accessKeyId, secretAccessKey, sessionToken, ...rest } = await Auth.currentCredentials()
-      console.log(rest)
 
       this.setState({ ...this.state, isAuthenticated: true, user: user.attributes, accessKeyId, secretAccessKey, sessionToken })
 
@@ -87,12 +86,12 @@ class App extends Component {
   checkCurrentSession = async () => {
 
     try {
-      const isSession = await Auth.currentSession()
-      if (isSession) {
+      const session = await Auth.currentSession()
+      if (session) {
         const { accessKeyId, secretAccessKey, sessionToken } = await Auth.currentCredentials()
         const user = await Auth.currentUserInfo()
-        console.log(user)
-        this.setState({ ...this.state, isAuthenticated: true, accessKeyId, secretAccessKey, sessionToken, user: user.attributes, username: user.username })
+        const idToken = session.getIdToken().getJwtToken()
+        this.setState({ ...this.state, isAuthenticated: true, accessKeyId, secretAccessKey, sessionToken, user: user.attributes, username: user.username, idToken })
       }
 
     } catch (error) {
@@ -104,15 +103,18 @@ class App extends Component {
   checkApiCognitoAuthorizer = async event => {
     event.preventDefault()
     try {
-      const { username } = this.state
-      const hashToken = config.api.HASH_ID_TOKEN
-      const token = localStorage.getItem(`${hashToken}.${username}.idToken`)
+      const { idToken } = this.state
       const key = config.api.KEY
+      const url = config.api.URL
 
-      if (token && key) {
-        const url = 'https://my-api.obanw.myinstance.com/v1/testquotaandcognito'
-        const headers = {"x-cognito-token": token, "x-api-key": key}
-        const response = await axios.get(url, { headers })
+      if (idToken && key) {
+        const headers = { "authorization": idToken, "x-api-key": key }
+        const params = { "message": "hello world" }
+        const config = {
+          headers,
+          params
+        }
+        const response = await axios.get(url, config)
         this.setState({ ...this.state, apiGatewayResponse: JSON.stringify(response.data) })
 
       }
@@ -137,12 +139,12 @@ class App extends Component {
               <form onSubmit={signIn}>
                 <h1>Cognito - React </h1>
                 <div>
-                  <label>Email/Username: </label>
-                  <input id='username' onChange={handleChange} value={username}></input>
+
+                  <input id='username' onChange={handleChange} value={username} placeholder='type your email/username'></input>
                 </div>
                 <div>
-                  <label>Password: </label>
-                  <input id='password' type='password' onChange={handleChange} value={password}></input>
+
+                  <input id='password' type='password' onChange={handleChange} value={password} placeholder='type your password'></input>
                 </div>
                 <button>Sign in</button>
 
@@ -150,21 +152,23 @@ class App extends Component {
             ) :
             (
               <>
-                <h1>Hello <strong>{user.email}</strong></h1>
-                <div>
-                  <label>S3 Bucket: </label>
-                  <input id='bucket' value={bucket} onChange={handleChange} />
+                <h1>Hello <strong>{username}</strong></h1> <button onClick={signOut}>Sign Out</button>
+                <div id='div-s3'>
+                <h3>S3</h3>
+                  <input id='bucket' value={bucket} onChange={handleChange} placeholder='Type the bucket name' />
                   <button onClick={listObjects}>List Files</button>
-                  <button onClick={checkApiCognitoAuthorizer}>Test Api Gateway</button>
-                  <button onClick={signOut}>Sign Out</button>
-                </div>
-                <div>
-                  <ul>
-                    {files.map((file, index) => (<li key={index}>{file.Key}</li>))}
 
-                  </ul>
+                 
+                  <div>
+                    <ul>
+                      {files.map((file, index) => (<li key={index}>{file.Key}</li>))}
+
+                    </ul>
+                  </div>
                 </div>
-                <div>
+                <div id='div-api-gateway'>
+                  <h3>Api Gateway</h3>
+                  <button onClick={checkApiCognitoAuthorizer}>Test Api Gateway</button>
                   {apiGatewayResponse}
                 </div>
               </>

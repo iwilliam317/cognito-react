@@ -109,12 +109,17 @@ class App extends Component {
 
       if (idToken && key) {
         const headers = { "authorization": idToken, "x-api-key": key }
-        const params = { "message": "hello world" }
-        const config = {
-          headers,
-          params
-        }
-        const response = await axios.get(url, config)
+
+        // POST
+        const data = { "message": "hello world" }
+        const config = { headers }
+        const response = await axios.post(url, data, config)
+
+        // GET
+        // const params = { "message": "hello world" }
+        // const config = { headers, params }
+        // const response = await axios.get(url, config)
+        
         this.setState({ ...this.state, apiGatewayResponse: JSON.stringify(response.data) })
 
       }
@@ -124,10 +129,12 @@ class App extends Component {
     }
   }
   componentDidMount() {
+    console.log('step componentDidMount')
     this.checkCurrentSession()
   }
 
   render() {
+    console.log('step render')
     const { handleChange, signIn, listObjects, signOut, checkApiCognitoAuthorizer } = this
     const { username, password, isAuthenticated, bucket, error, user, files, apiGatewayResponse } = this.state
     return (
@@ -154,11 +161,11 @@ class App extends Component {
               <>
                 <h1>Hello <strong>{username}</strong></h1> <button onClick={signOut}>Sign Out</button>
                 <div id='div-s3'>
-                <h3>S3</h3>
+                  <h3>S3</h3>
                   <input id='bucket' value={bucket} onChange={handleChange} placeholder='Type the bucket name' />
                   <button onClick={listObjects}>List Files</button>
 
-                 
+
                   <div>
                     <ul>
                       {files.map((file, index) => (<li key={index}>{file.Key}</li>))}

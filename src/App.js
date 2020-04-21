@@ -12,6 +12,7 @@ class App extends Component {
     bucket: '',
     user: {},
     files: [],
+    apiGatewayResponse: '',
     error: {
       message: null,
       code: null,
@@ -26,7 +27,7 @@ class App extends Component {
 
   clearState = () => {
     this.setState({
-      ...this.state, error: {
+      error: {
         message: null,
         code: null,
         name: null
@@ -44,10 +45,10 @@ class App extends Component {
       const user = await Auth.signIn(username, password)
       const { accessKeyId, secretAccessKey, sessionToken, ...rest } = await Auth.currentCredentials()
 
-      this.setState({ ...this.state, isAuthenticated: true, user: user.attributes, accessKeyId, secretAccessKey, sessionToken })
+      this.setState({ isAuthenticated: true, user: user.attributes, accessKeyId, secretAccessKey, sessionToken })
 
     } catch (error) {
-      this.setState({ ...this.state, error })
+      this.setState({ error })
     }
 
   }
@@ -56,9 +57,9 @@ class App extends Component {
     event.preventDefault();
     try {
       Auth.signOut();
-      this.setState({ ...this.state, isAuthenticated: false, user: {} })
+      this.setState({ isAuthenticated: false, user: {}, password: '' })
     } catch (error) {
-      this.setState({ ...this.state, error })
+      this.setState({ error })
     }
   }
 
@@ -76,10 +77,10 @@ class App extends Component {
     try {
       const data = await s3.listObjects(params).promise()
       const files = data.Contents
-      this.setState({ ...this.state, files })
+      this.setState({ files })
 
     } catch (error) {
-      this.setState({ ...this.state, error })
+      this.setState({ error })
     }
   }
 
@@ -91,21 +92,21 @@ class App extends Component {
         const { accessKeyId, secretAccessKey, sessionToken } = await Auth.currentCredentials()
         const user = await Auth.currentUserInfo()
         const idToken = session.getIdToken().getJwtToken()
-        this.setState({ ...this.state, isAuthenticated: true, accessKeyId, secretAccessKey, sessionToken, user: user.attributes, username: user.username, idToken })
+        this.setState({ isAuthenticated: true, accessKeyId, secretAccessKey, sessionToken, user: user.attributes, username: user.username, idToken })
       }
 
     } catch (error) {
-      this.setState({ ...this.state, error })
+      this.setState({ error })
     }
 
   }
 
   checkApiCognitoAuthorizer = async event => {
     event.preventDefault()
+    this.clearState()
     try {
       const { idToken } = this.state
-      const key = config.api.KEY
-      const url = config.api.URL
+      const { KEY: key, URL: url } = config.api
 
       if (idToken && key) {
         const headers = { "authorization": idToken, "x-api-key": key }
@@ -119,13 +120,13 @@ class App extends Component {
         // const params = { "message": "hello world" }
         // const config = { headers, params }
         // const response = await axios.get(url, config)
-        
-        this.setState({ ...this.state, apiGatewayResponse: JSON.stringify(response.data) })
+
+        this.setState({ apiGatewayResponse: JSON.stringify(response.data) })
 
       }
     } catch (error) {
       console.log(error)
-      this.setState({ ...this.state, error })
+      this.setState({ error })
     }
   }
   componentDidMount() {

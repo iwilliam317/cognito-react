@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/cognito-react/static/css/main.d1b05096.chunk.css",
-    "main.js": "/cognito-react/static/js/main.f5b8c45a.chunk.js",
-    "main.js.map": "/cognito-react/static/js/main.f5b8c45a.chunk.js.map",
+    "main.js": "/cognito-react/static/js/main.a97ffb8c.chunk.js",
+    "main.js.map": "/cognito-react/static/js/main.a97ffb8c.chunk.js.map",
     "runtime-main.js": "/cognito-react/static/js/runtime-main.8cc20d9a.js",
     "runtime-main.js.map": "/cognito-react/static/js/runtime-main.8cc20d9a.js.map",
     "static/js/2.7389bc92.chunk.js": "/cognito-react/static/js/2.7389bc92.chunk.js",
     "static/js/2.7389bc92.chunk.js.map": "/cognito-react/static/js/2.7389bc92.chunk.js.map",
     "index.html": "/cognito-react/index.html",
-    "precache-manifest.df4aefac81a2d659c65237bb73260293.js": "/cognito-react/precache-manifest.df4aefac81a2d659c65237bb73260293.js",
+    "precache-manifest.f550cb71597926f3a71cd31bdcf66fe1.js": "/cognito-react/precache-manifest.f550cb71597926f3a71cd31bdcf66fe1.js",
     "service-worker.js": "/cognito-react/service-worker.js",
     "static/css/main.d1b05096.chunk.css.map": "/cognito-react/static/css/main.d1b05096.chunk.css.map",
     "static/js/2.7389bc92.chunk.js.LICENSE.txt": "/cognito-react/static/js/2.7389bc92.chunk.js.LICENSE.txt"
@@ -17,6 +17,6 @@
     "static/js/runtime-main.8cc20d9a.js",
     "static/js/2.7389bc92.chunk.js",
     "static/css/main.d1b05096.chunk.css",
-    "static/js/main.f5b8c45a.chunk.js"
+    "static/js/main.a97ffb8c.chunk.js"
   ]
 }
